@@ -20,6 +20,24 @@ def load_data():
 df = load_data()
 
 # -----------------------------
+# MAANDNAMEN (AFKORTINGEN)
+# -----------------------------
+MONTH_SHORT = {
+    1: "Jan",
+    2: "Feb",
+    3: "Mrt",
+    4: "Apr",
+    5: "Mei",
+    6: "Jun",
+    7: "Jul",
+    8: "Aug",
+    9: "Sep",
+    10: "Okt",
+    11: "Nov",
+    12: "Dec"
+}
+
+# -----------------------------
 # KLEUREN (HIGH CONTRAST)
 # -----------------------------
 COLOR_MAP = {
@@ -124,7 +142,6 @@ if resolution == "Dagbasis (uren)":
         st.plotly_chart(fig, use_container_width=True)
 
     else:
-        # LIJNDIAGRAM (DAGBASIS)
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(
@@ -156,7 +173,6 @@ elif resolution == "Maandbasis (dagen)":
 
     df_month = df_year[df_year["Month"] == month].copy()
 
-    # WINDROOS
     if element_name == "Windrichting":
         st.subheader(f"Windroos – {year}-{month}")
         fig = make_wind_rose(df_month)
@@ -178,7 +194,6 @@ elif resolution == "Maandbasis (dagen)":
 
         daily = daily.sort_values("Day")
 
-        # LIJNDIAGRAM (MAANDBASIS)
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(
@@ -221,10 +236,13 @@ elif resolution == "Jaarbasis (maanden)":
 
     yearly = yearly.sort_values("Month")
 
+    # Maandafkortingen toevoegen
+    yearly["Maandnaam"] = yearly["Month"].map(MONTH_SHORT)
+
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        x=yearly["Month"],
+        x=yearly["Maandnaam"],
         y=yearly[element_name],
         mode="lines+markers",
         line=dict(color=color, width=3),
@@ -236,7 +254,7 @@ elif resolution == "Jaarbasis (maanden)":
         plot_bgcolor="#e6e6e6",
         paper_bgcolor="#e6e6e6",
         font=dict(color="black", size=14),
-        xaxis_title="Maand (1–12)",
+        xaxis_title="Maand",
         yaxis_title=f"{stat_choice} {element_name}"
     )
 
