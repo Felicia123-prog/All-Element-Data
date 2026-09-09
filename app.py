@@ -57,15 +57,15 @@ def make_wind_rose(df):
 
     fig.update_layout(
         polar=dict(
-            radialaxis=dict(showticklabels=True, ticks="outside", color="white"),
-            angularaxis=dict(direction="clockwise", color="white")
+            radialaxis=dict(showticklabels=True, ticks="outside", color="black"),
+            angularaxis=dict(direction="clockwise", color="black")
         ),
         showlegend=False,
         height=600,
-        paper_bgcolor="#2b2b2b",
-        plot_bgcolor="#2b2b2b",
-        font=dict(color="white", size=14),
-        title=dict(text="Windroos", font=dict(color="white", size=18, family="Arial", bold=True))
+        paper_bgcolor="#e6e6e6",
+        plot_bgcolor="#e6e6e6",
+        font=dict(color="black", size=14),
+        title=dict(text="Windroos", font=dict(color="black", size=20))
     )
 
     return fig
@@ -75,7 +75,7 @@ def make_wind_rose(df):
 # -----------------------------
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
-st.title("🌑 All Element Data – Zorg & Hoop")
+st.title("All Element Data – Zorg & Hoop")
 st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
@@ -134,13 +134,13 @@ if resolution == "Dagbasis (uren)":
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#2b2b2b",
-            paper_bgcolor="#2b2b2b",
-            font=dict(color="white", size=14),
-            xaxis=dict(title="Uur (0–23)", color="white",
-                       titlefont=dict(color="white", size=16, family="Arial", bold=True)),
-            yaxis=dict(title=element_name, color="white",
-                       titlefont=dict(color="white", size=16, family="Arial", bold=True))
+            plot_bgcolor="#e6e6e6",
+            paper_bgcolor="#e6e6e6",
+            font=dict(color="black", size=14),
+            xaxis=dict(title="Uur (0–23)", color="black",
+                       titlefont=dict(color="black", size=16)),
+            yaxis=dict(title=element_name, color="black",
+                       titlefont=dict(color="black", size=16))
         )
 
         st.subheader(f"{element_name} – Dagbasis (uren)")
@@ -190,13 +190,13 @@ elif resolution == "Maandbasis (dagen)":
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#2b2b2b",
-            paper_bgcolor="#2b2b2b",
-            font=dict(color="white", size=14),
-            xaxis=dict(title="Dag van de maand", color="white",
-                       titlefont=dict(color="white", size=16, family="Arial", bold=True)),
-            yaxis=dict(title=f"{stat_choice} {element_name}", color="white",
-                       titlefont=dict(color="white", size=16, family="Arial", bold=True))
+            plot_bgcolor="#e6e6e6",
+            paper_bgcolor="#e6e6e6",
+            font=dict(color="black", size=14),
+            xaxis=dict(title="Dag van de maand", color="black",
+                       titlefont=dict(color="black", size=16)),
+            yaxis=dict(title=f"{stat_choice} {element_name}", color="black",
+                       titlefont=dict(color="black", size=16))
         )
 
         st.subheader(f"{element_name} – Maandbasis ({stat_choice})")
