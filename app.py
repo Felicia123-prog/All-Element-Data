@@ -199,6 +199,51 @@ elif resolution == "Maandbasis (dagen)":
         st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
+# JAARBASIS
+# -----------------------------
+elif resolution == "Jaarbasis (maanden)":
+
+    # Statistiek kiezen
+    stat_choice = st.radio(
+        "Kies statistiek:",
+        ["Gemiddelde", "Maximum", "Minimum"],
+        horizontal=True
+    )
+
+    # Per maand berekenen
+    if stat_choice == "Gemiddelde":
+        yearly = df_year.groupby("Month")[element_name].mean().reset_index()
+    elif stat_choice == "Maximum":
+        yearly = df_year.groupby("Month")[element_name].max().reset_index()
+    elif stat_choice == "Minimum":
+        yearly = df_year.groupby("Month")[element_name].min().reset_index()
+
+    yearly = yearly.sort_values("Month")
+
+    # Lijndiagram (JAARBASIS)
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=yearly["Month"],
+        y=yearly[element_name],
+        mode="lines+markers",
+        line=dict(color=color, width=3),
+        marker=dict(size=6, color=color)
+    ))
+
+    fig.update_layout(
+        height=500,
+        plot_bgcolor="#e6e6e6",
+        paper_bgcolor="#e6e6e6",
+        font=dict(color="black", size=14),
+        xaxis_title="Maand (1–12)",
+        yaxis_title=f"{stat_choice} {element_name}"
+    )
+
+    st.subheader(f"{element_name} – Jaarbasis ({stat_choice})")
+    st.plotly_chart(fig, use_container_width=True)
+
+# -----------------------------
 # FOOTER
 # -----------------------------
 st.markdown("---")
