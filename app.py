@@ -62,10 +62,10 @@ def make_wind_rose(df):
         ),
         showlegend=False,
         height=600,
-        paper_bgcolor="#1e1e1e",
-        plot_bgcolor="#1e1e1e",
-        font=dict(color="white"),
-        title="Windroos"
+        paper_bgcolor="#2b2b2b",
+        plot_bgcolor="#2b2b2b",
+        font=dict(color="white", size=14),
+        title=dict(text="Windroos", font=dict(color="white", size=18, family="Arial", bold=True))
     )
 
     return fig
@@ -134,11 +134,13 @@ if resolution == "Dagbasis (uren)":
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#1e1e1e",
-            paper_bgcolor="#1e1e1e",
-            font=dict(color="white"),
-            xaxis=dict(title="Uur (0–23)", color="white"),
-            yaxis=dict(title=element_name, color="white")
+            plot_bgcolor="#2b2b2b",
+            paper_bgcolor="#2b2b2b",
+            font=dict(color="white", size=14),
+            xaxis=dict(title="Uur (0–23)", color="white",
+                       titlefont=dict(color="white", size=16, family="Arial", bold=True)),
+            yaxis=dict(title=element_name, color="white",
+                       titlefont=dict(color="white", size=16, family="Arial", bold=True))
         )
 
         st.subheader(f"{element_name} – Dagbasis (uren)")
@@ -188,11 +190,13 @@ elif resolution == "Maandbasis (dagen)":
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#1e1e1e",
-            paper_bgcolor="#1e1e1e",
-            font=dict(color="white"),
-            xaxis=dict(title="Dag van de maand", color="white"),
-            yaxis=dict(title=f"{stat_choice} {element_name}", color="white")
+            plot_bgcolor="#2b2b2b",
+            paper_bgcolor="#2b2b2b",
+            font=dict(color="white", size=14),
+            xaxis=dict(title="Dag van de maand", color="white",
+                       titlefont=dict(color="white", size=16, family="Arial", bold=True)),
+            yaxis=dict(title=f"{stat_choice} {element_name}", color="white",
+                       titlefont=dict(color="white", size=16, family="Arial", bold=True))
         )
 
         st.subheader(f"{element_name} – Maandbasis ({stat_choice})")
@@ -202,4 +206,4 @@ elif resolution == "Maandbasis (dagen)":
 # FOOTER
 # -----------------------------
 st.markdown("---")
-st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Dark Grey Mode)")
+st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard")
