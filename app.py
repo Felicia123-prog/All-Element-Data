@@ -65,7 +65,7 @@ def make_wind_rose(df):
         paper_bgcolor="#e6e6e6",
         plot_bgcolor="#e6e6e6",
         font=dict(color="black", size=14),
-        title=dict(text="Windroos", font=dict(color="black", size=20))
+        title="Windroos"
     )
 
     return fig
@@ -137,10 +137,8 @@ if resolution == "Dagbasis (uren)":
             plot_bgcolor="#e6e6e6",
             paper_bgcolor="#e6e6e6",
             font=dict(color="black", size=14),
-            xaxis=dict(title="Uur (0–23)", color="black",
-                       titlefont=dict(color="black", size=16)),
-            yaxis=dict(title=element_name, color="black",
-                       titlefont=dict(color="black", size=16))
+            xaxis_title="Uur (0–23)",
+            yaxis_title=element_name
         )
 
         st.subheader(f"{element_name} – Dagbasis (uren)")
@@ -193,10 +191,8 @@ elif resolution == "Maandbasis (dagen)":
             plot_bgcolor="#e6e6e6",
             paper_bgcolor="#e6e6e6",
             font=dict(color="black", size=14),
-            xaxis=dict(title="Dag van de maand", color="black",
-                       titlefont=dict(color="black", size=16)),
-            yaxis=dict(title=f"{stat_choice} {element_name}", color="black",
-                       titlefont=dict(color="black", size=16))
+            xaxis_title="Dag van de maand",
+            yaxis_title=f"{stat_choice} {element_name}"
         )
 
         st.subheader(f"{element_name} – Maandbasis ({stat_choice})")
