@@ -76,7 +76,7 @@ def make_wind_rose(df):
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
 st.title("All Element Data – Zorg & Hoop")
-st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
+st.write("Analyse van uurdata per dag, per maand en per jaar, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
 elements = [
@@ -91,7 +91,10 @@ element_name = st.selectbox("Kies een element:", elements)
 color = COLOR_MAP[element_name]
 
 # TIJDSRESOLUTIE
-resolution = st.selectbox("Kies tijdsresolutie:", ["Dagbasis (uren)", "Maandbasis (dagen)"])
+resolution = st.selectbox(
+    "Kies tijdsresolutie:",
+    ["Dagbasis (uren)", "Maandbasis (dagen)", "Jaarbasis (maanden)"]
+)
 
 # JAARSELECTIE
 years = sorted(df["Year"].dropna().unique())
@@ -203,14 +206,12 @@ elif resolution == "Maandbasis (dagen)":
 # -----------------------------
 elif resolution == "Jaarbasis (maanden)":
 
-    # Statistiek kiezen
     stat_choice = st.radio(
         "Kies statistiek:",
         ["Gemiddelde", "Maximum", "Minimum"],
         horizontal=True
     )
 
-    # Per maand berekenen
     if stat_choice == "Gemiddelde":
         yearly = df_year.groupby("Month")[element_name].mean().reset_index()
     elif stat_choice == "Maximum":
@@ -220,7 +221,6 @@ elif resolution == "Jaarbasis (maanden)":
 
     yearly = yearly.sort_values("Month")
 
-    # Lijndiagram (JAARBASIS)
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
