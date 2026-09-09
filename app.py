@@ -20,25 +20,13 @@ def load_data():
 df = load_data()
 
 # -----------------------------
-# MAPPING NAAR JOUW KOLOMNAMEN
-# -----------------------------
-element_map = {
-    "Temperatuur": "T",
-    "Relatieve vochtigheid": "RH",
-    "Visibility": "VV",
-    "Windrichting": "DD",
-    "Windsnelheid": "FF",
-    "Druk": "PPP"
-}
-
-# -----------------------------
 # KLEUREN (HIGH CONTRAST)
 # -----------------------------
 COLOR_MAP = {
     "Temperatuur": "#FF5733",            # fel oranje-rood
-    "Relatieve vochtigheid": "#33C1FF",  # fel blauw
+    "Relatieve Vochtigheid": "#33C1FF",  # fel blauw
     "Visibility": "#9DFF33",             # fel groen
-    "Windrichting": "#c7ceea",           # windroos pastel
+    "Windrichting": "#c7ceea",           # pastel voor windroos
     "Windsnelheid": "#FF33F6",           # fel roze
     "Druk": "#F3FF33"                    # fel geel
 }
@@ -47,19 +35,19 @@ COLOR_MAP = {
 # WINDROOS
 # -----------------------------
 def make_wind_rose(df):
-    directions = df["DD"]
-    speeds = df["FF"]
+    directions = df["Windrichting"]
+    speeds = df["Windsnelheid"]
 
     bins = np.arange(0, 361, 30)
     df["sector"] = pd.cut(directions, bins=bins, include_lowest=True)
 
-    rose = df.groupby("sector")["FF"].mean().reset_index()
+    rose = df.groupby("sector")["Windsnelheid"].mean().reset_index()
     labels = [f"{bins[i]}–{bins[i+1]}" for i in range(len(bins)-1)]
 
     fig = go.Figure()
 
     fig.add_trace(go.Barpolar(
-        r=rose["FF"],
+        r=rose["Windsnelheid"],
         theta=labels,
         marker_color="#c7ceea",
         marker_line_color="#c7ceea",
@@ -93,14 +81,13 @@ st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor wind
 # ELEMENT KIEZEN
 elements = [
     "Temperatuur",
-    "Relatieve vochtigheid",
+    "Relatieve Vochtigheid",
     "Visibility",
     "Windrichting",
     "Windsnelheid",
     "Druk"
 ]
 element_name = st.selectbox("Kies een element:", elements)
-colname = element_map[element_name]
 color = COLOR_MAP[element_name]
 
 # TIJDSRESOLUTIE
@@ -139,7 +126,7 @@ if resolution == "Dagbasis (uren)":
 
         fig.add_trace(go.Scatter(
             x=df_day["TIJD"],
-            y=df_day[colname],
+            y=df_day[element_name],
             mode="lines+markers",
             line=dict(color=color, width=3),
             marker=dict(size=6, color=color)
@@ -180,20 +167,20 @@ elif resolution == "Maandbasis (dagen)":
         )
 
         if stat_choice == "Gemiddelde":
-            daily = df_month.groupby("Day")[colname].mean().reset_index()
+            daily = df_month.groupby("Day")[element_name].mean().reset_index()
         elif stat_choice == "Maximum":
-            daily = df_month.groupby("Day")[colname].max().reset_index()
+            daily = df_month.groupby("Day")[element_name].max().reset_index()
         elif stat_choice == "Minimum":
-            daily = df_month.groupby("Day")[colname].min().reset_index()
+            daily = df_month.groupby("Day")[element_name].min().reset_index()
 
         daily = daily.sort_values("Day")
 
-        # STAADIAGRAM (MAANDBASIS)
+        # STAAFDIAGRAM (MAANDBASIS)
         fig = go.Figure()
 
         fig.add_trace(go.Bar(
             x=daily["Day"],
-            y=daily[colname],
+            y=daily[element_name],
             marker=dict(color=color)
         ))
 
