@@ -23,12 +23,12 @@ df = load_data()
 # KLEUREN (HIGH CONTRAST)
 # -----------------------------
 COLOR_MAP = {
-    "Temperatuur": "#FF5733",            # fel oranje-rood
-    "Relatieve Vochtigheid": "#33C1FF",  # fel blauw
-    "Visibility": "#9DFF33",             # fel groen
-    "Windrichting": "#c7ceea",           # pastel voor windroos
-    "Windsnelheid": "#FF33F6",           # fel roze
-    "Druk": "#F3FF33"                    # fel geel
+    "Temperatuur": "#FF5733",
+    "Relatieve Vochtigheid": "#33C1FF",
+    "Visibility": "#9DFF33",
+    "Windrichting": "#c7ceea",
+    "Windsnelheid": "#FF33F6",
+    "Druk": "#F3FF33"
 }
 
 # -----------------------------
@@ -62,8 +62,8 @@ def make_wind_rose(df):
         ),
         showlegend=False,
         height=600,
-        paper_bgcolor="#000000",
-        plot_bgcolor="#000000",
+        paper_bgcolor="#1e1e1e",
+        plot_bgcolor="#1e1e1e",
         font=dict(color="white"),
         title="Windroos"
     )
@@ -75,7 +75,7 @@ def make_wind_rose(df):
 # -----------------------------
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
-st.title("🌑 All Element Data – Zorg & Hoop (Dark Mode)")
+st.title("🌑 All Element Data – Zorg & Hoop (Dark Grey Mode)")
 st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
@@ -134,8 +134,8 @@ if resolution == "Dagbasis (uren)":
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#000000",
-            paper_bgcolor="#000000",
+            plot_bgcolor="#1e1e1e",
+            paper_bgcolor="#1e1e1e",
             font=dict(color="white"),
             xaxis=dict(title="Uur (0–23)", color="white"),
             yaxis=dict(title=element_name, color="white")
@@ -175,19 +175,21 @@ elif resolution == "Maandbasis (dagen)":
 
         daily = daily.sort_values("Day")
 
-        # STAAFDIAGRAM (MAANDBASIS)
+        # LIJNDIAGRAM (MAANDBASIS)
         fig = go.Figure()
 
-        fig.add_trace(go.Bar(
+        fig.add_trace(go.Scatter(
             x=daily["Day"],
             y=daily[element_name],
-            marker=dict(color=color)
+            mode="lines+markers",
+            line=dict(color=color, width=3),
+            marker=dict(size=6, color=color)
         ))
 
         fig.update_layout(
             height=500,
-            plot_bgcolor="#000000",
-            paper_bgcolor="#000000",
+            plot_bgcolor="#1e1e1e",
+            paper_bgcolor="#1e1e1e",
             font=dict(color="white"),
             xaxis=dict(title="Dag van de maand", color="white"),
             yaxis=dict(title=f"{stat_choice} {element_name}", color="white")
@@ -200,4 +202,4 @@ elif resolution == "Maandbasis (dagen)":
 # FOOTER
 # -----------------------------
 st.markdown("---")
-st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Dark Mode)")
+st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Dark Grey Mode)")
