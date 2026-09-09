@@ -75,7 +75,7 @@ def make_wind_rose(df):
 # -----------------------------
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
-st.title("🌑 All Element Data – Zorg & Hoop (Dark Grey Mode)")
+st.title("🌑 All Element Data – Zorg & Hoop")
 st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
