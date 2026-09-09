@@ -271,4 +271,12 @@ elif resolution == "Maandbasis (dagen)":
         daily[["Day", element_name]],
         filename_prefix=f"{element_name}_{year}_{month}_{stat_choice}_maandbasis"
     )
+    # -----------------------------
+# EINDE VAN DE APP
+# -----------------------------
+
+st.markdown("---")
+st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Pastel Glow UI)")
+st.write("© Meteorologische Dienst Suriname – Unit Klimatologie")
+
 
