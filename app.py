@@ -20,36 +20,46 @@ def load_data():
 df = load_data()
 
 # -----------------------------
-# VECTOR GEMIDDELDE WINDRICHTING
+# MAPPING NAAR JOUW KOLOMNAMEN
 # -----------------------------
-def vector_mean(series):
-    series = pd.to_numeric(series, errors="coerce").dropna()
-    if len(series) == 0:
-        return np.nan
-    rad = np.deg2rad(series)
-    u = -np.sin(rad)
-    v = -np.cos(rad)
-    angle = (np.rad2deg(np.arctan2(u.mean(), v.mean())) + 360) % 360
-    return angle
+element_map = {
+    "Temperatuur": "T",
+    "Relatieve vochtigheid": "RH",
+    "Visibility": "VV",
+    "Windrichting": "DD",
+    "Windsnelheid": "FF",
+    "Druk": "PPP"
+}
+
+# -----------------------------
+# KLEUREN (HIGH CONTRAST)
+# -----------------------------
+COLOR_MAP = {
+    "Temperatuur": "#FF5733",            # fel oranje-rood
+    "Relatieve vochtigheid": "#33C1FF",  # fel blauw
+    "Visibility": "#9DFF33",             # fel groen
+    "Windrichting": "#c7ceea",           # windroos pastel
+    "Windsnelheid": "#FF33F6",           # fel roze
+    "Druk": "#F3FF33"                    # fel geel
+}
 
 # -----------------------------
 # WINDROOS
 # -----------------------------
 def make_wind_rose(df):
-    directions = df["Windrichting"]
-    speeds = df["Windsnelheid"]
+    directions = df["DD"]
+    speeds = df["FF"]
 
     bins = np.arange(0, 361, 30)
     df["sector"] = pd.cut(directions, bins=bins, include_lowest=True)
 
-    rose = df.groupby("sector")["Windsnelheid"].mean().reset_index()
-
+    rose = df.groupby("sector")["FF"].mean().reset_index()
     labels = [f"{bins[i]}–{bins[i+1]}" for i in range(len(bins)-1)]
 
     fig = go.Figure()
 
     fig.add_trace(go.Barpolar(
-        r=rose["Windsnelheid"],
+        r=rose["FF"],
         theta=labels,
         marker_color="#c7ceea",
         marker_line_color="#c7ceea",
@@ -59,49 +69,39 @@ def make_wind_rose(df):
 
     fig.update_layout(
         polar=dict(
-            radialaxis=dict(showticklabels=True, ticks="outside"),
-            angularaxis=dict(direction="clockwise")
+            radialaxis=dict(showticklabels=True, ticks="outside", color="white"),
+            angularaxis=dict(direction="clockwise", color="white")
         ),
         showlegend=False,
         height=600,
-        paper_bgcolor="#fdfbff",
-        plot_bgcolor="#fdfbff",
+        paper_bgcolor="#000000",
+        plot_bgcolor="#000000",
+        font=dict(color="white"),
         title="Windroos"
     )
 
     return fig
 
 # -----------------------------
-# PASTEL KLEUREN
-# -----------------------------
-PASTEL_COLORS = {
-    "Temperatuur": "#ff9aa2",
-    "Relatieve vochtigheid": "#a2d5f2",
-    "Visibilty": "#b5ead7",
-    "Windrichting": "#c7ceea",
-    "Windsnelheid": "#fff3b0",
-    "Druk": "#9bf6ff"
-}
-
-# -----------------------------
 # UI
 # -----------------------------
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
-st.title("🌈 All Element Data – Zorg & Hoop")
-
+st.title("🌑 All Element Data – Zorg & Hoop (Dark Mode)")
 st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
 elements = [
     "Temperatuur",
     "Relatieve vochtigheid",
-    "Visibilty",
+    "Visibility",
     "Windrichting",
     "Windsnelheid",
     "Druk"
 ]
 element_name = st.selectbox("Kies een element:", elements)
+colname = element_map[element_name]
+color = COLOR_MAP[element_name]
 
 # TIJDSRESOLUTIE
 resolution = st.selectbox("Kies tijdsresolutie:", ["Dagbasis (uren)", "Maandbasis (dagen)"])
@@ -134,37 +134,24 @@ if resolution == "Dagbasis (uren)":
         st.plotly_chart(fig, use_container_width=True)
 
     else:
-        # PASTEL LIJNGRAFIEK
-        color = PASTEL_COLORS.get(element_name, "#a2d5f2")
-
+        # LIJNDIAGRAM (DAGBASIS)
         fig = go.Figure()
 
-        # Glow laag
         fig.add_trace(go.Scatter(
             x=df_day["TIJD"],
-            y=df_day[element_name],
-            mode="lines",
-            line=dict(color=color, width=10),
-            opacity=0.15,
-            showlegend=False
-        ))
-
-        # Hoofdlaag
-        fig.add_trace(go.Scatter(
-            x=df_day["TIJD"],
-            y=df_day[element_name],
+            y=df_day[colname],
             mode="lines+markers",
             line=dict(color=color, width=3),
-            marker=dict(size=6, color=color),
-            name=element_name
+            marker=dict(size=6, color=color)
         ))
 
         fig.update_layout(
-            xaxis_title="Uur (0–23)",
-            yaxis_title=element_name,
             height=500,
-            plot_bgcolor="#fdfbff",
-            paper_bgcolor="#fdfbff"
+            plot_bgcolor="#000000",
+            paper_bgcolor="#000000",
+            font=dict(color="white"),
+            xaxis=dict(title="Uur (0–23)", color="white"),
+            yaxis=dict(title=element_name, color="white")
         )
 
         st.subheader(f"{element_name} – Dagbasis (uren)")
@@ -193,44 +180,30 @@ elif resolution == "Maandbasis (dagen)":
         )
 
         if stat_choice == "Gemiddelde":
-            daily = df_month.groupby("Day")[element_name].mean().reset_index()
+            daily = df_month.groupby("Day")[colname].mean().reset_index()
         elif stat_choice == "Maximum":
-            daily = df_month.groupby("Day")[element_name].max().reset_index()
+            daily = df_month.groupby("Day")[colname].max().reset_index()
         elif stat_choice == "Minimum":
-            daily = df_month.groupby("Day")[element_name].min().reset_index()
+            daily = df_month.groupby("Day")[colname].min().reset_index()
 
         daily = daily.sort_values("Day")
 
-        color = PASTEL_COLORS.get(element_name, "#a2d5f2")
-
+        # STAADIAGRAM (MAANDBASIS)
         fig = go.Figure()
 
-        # Glow laag
-        fig.add_trace(go.Scatter(
+        fig.add_trace(go.Bar(
             x=daily["Day"],
-            y=daily[element_name],
-            mode="lines",
-            line=dict(color=color, width=10),
-            opacity=0.15,
-            showlegend=False
-        ))
-
-        # Hoofdlaag
-        fig.add_trace(go.Scatter(
-            x=daily["Day"],
-            y=daily[element_name],
-            mode="lines+markers",
-            line=dict(color=color, width=3),
-            marker=dict(size=6, color=color),
-            name=f"{stat_choice} {element_name}"
+            y=daily[colname],
+            marker=dict(color=color)
         ))
 
         fig.update_layout(
-            xaxis_title="Dag van de maand",
-            yaxis_title=f"{stat_choice} {element_name}",
             height=500,
-            plot_bgcolor="#fdfbff",
-            paper_bgcolor="#fdfbff"
+            plot_bgcolor="#000000",
+            paper_bgcolor="#000000",
+            font=dict(color="white"),
+            xaxis=dict(title="Dag van de maand", color="white"),
+            yaxis=dict(title=f"{stat_choice} {element_name}", color="white")
         )
 
         st.subheader(f"{element_name} – Maandbasis ({stat_choice})")
@@ -240,4 +213,4 @@ elif resolution == "Maandbasis (dagen)":
 # FOOTER
 # -----------------------------
 st.markdown("---")
-st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard")
+st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Dark Mode)")
