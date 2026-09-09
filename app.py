@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
-import io
 
 # -----------------------------
 # DATA LADEN
@@ -34,77 +33,54 @@ def vector_mean(series):
     return angle
 
 # -----------------------------
-# EXPORT FUNCTIES
+# WINDROOS
 # -----------------------------
-def export_png(fig):
-    buf = io.BytesIO()
-    fig.write_image(buf, format="png")
-    return buf.getvalue()
+def make_wind_rose(df):
+    directions = df["Windrichting"]
+    speeds = df["Windsnelheid"]
 
-def export_svg(fig):
-    buf = io.BytesIO()
-    fig.write_image(buf, format="svg")
-    return buf.getvalue()
+    bins = np.arange(0, 361, 30)
+    df["sector"] = pd.cut(directions, bins=bins, include_lowest=True)
 
-def export_pdf(fig):
-    buf = io.BytesIO()
-    fig.write_image(buf, format="pdf")
-    return buf.getvalue()
+    rose = df.groupby("sector")["Windsnelheid"].mean().reset_index()
 
-def export_csv(df):
-    return df.to_csv(index=False).encode("utf-8")
+    labels = [f"{bins[i]}–{bins[i+1]}" for i in range(len(bins)-1)]
 
-def export_excel(df):
-    buf = io.BytesIO()
-    df.to_excel(buf, index=False)
-    return buf.getvalue()
+    fig = go.Figure()
 
-def export_panel(fig, df_export, filename_prefix="export"):
-    st.subheader("📥 Export panel")
-    col1, col2, col3 = st.columns(3)
-    col4, col5 = st.columns(2)
+    fig.add_trace(go.Barpolar(
+        r=rose["Windsnelheid"],
+        theta=labels,
+        marker_color="#c7ceea",
+        marker_line_color="#c7ceea",
+        marker_line_width=2,
+        opacity=0.85
+    ))
 
-    col1.download_button(
-        "📸 PNG",
-        data=export_png(fig),
-        file_name=f"{filename_prefix}.png",
-        mime="image/png"
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(showticklabels=True, ticks="outside"),
+            angularaxis=dict(direction="clockwise")
+        ),
+        showlegend=False,
+        height=600,
+        paper_bgcolor="#fdfbff",
+        plot_bgcolor="#fdfbff",
+        title="Windroos"
     )
-    col2.download_button(
-        "🖼️ SVG",
-        data=export_svg(fig),
-        file_name=f"{filename_prefix}.svg",
-        mime="image/svg+xml"
-    )
-    col3.download_button(
-        "📄 PDF",
-        data=export_pdf(fig),
-        file_name=f"{filename_prefix}.pdf",
-        mime="application/pdf"
-    )
-    col4.download_button(
-        "📊 CSV (data)",
-        data=export_csv(df_export),
-        file_name=f"{filename_prefix}.csv",
-        mime="text/csv"
-    )
-    col5.download_button(
-        "📈 Excel (data)",
-        data=export_excel(df_export),
-        file_name=f"{filename_prefix}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+
+    return fig
 
 # -----------------------------
-# PASTEL GLOW KLEUREN
+# PASTEL KLEUREN
 # -----------------------------
 PASTEL_COLORS = {
-    "Temperatuur": "#ff9aa2",            # pastel roze
-    "Relatieve vochtigheid": "#a2d5f2",  # pastel blauw
-    "Visibilty": "#b5ead7",              # pastel groen
-    "Windrichting": "#c7ceea",           # pastel paars
-    "Windsnelheid": "#fff3b0",           # pastel geel
-    "Druk": "#9bf6ff"                    # pastel mint
+    "Temperatuur": "#ff9aa2",
+    "Relatieve vochtigheid": "#a2d5f2",
+    "Visibilty": "#b5ead7",
+    "Windrichting": "#c7ceea",
+    "Windsnelheid": "#fff3b0",
+    "Druk": "#9bf6ff"
 }
 
 # -----------------------------
@@ -112,19 +88,9 @@ PASTEL_COLORS = {
 # -----------------------------
 st.set_page_config(page_title="All Element Data – Zorg & Hoop", layout="wide")
 
-st.markdown(
-    """
-    <style>
-    body {
-        background-color: #fdfbff;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.title("🌈 All Element Data – Zorg & Hoop")
 
-st.title("🌈 All Element Data – Zorg & Hoop (Pastel Glow Dashboard)")
-st.write("Analyse van uurdata per dag en per maand, met exportopties en vector-gemiddelde voor windrichting.")
+st.write("Analyse van uurdata per dag en per maand, inclusief windroos voor windrichting.")
 
 # ELEMENT KIEZEN
 elements = [
@@ -147,11 +113,9 @@ year = st.selectbox("Kies een jaar:", years)
 df_year = df[df["Year"] == year]
 
 # -----------------------------
-# DAGBASIS (uren 0–23)
+# DAGBASIS
 # -----------------------------
 if resolution == "Dagbasis (uren)":
-    st.subheader(f"{element_name} – Dagbasis (uren) – {year}")
-
     months = sorted(df_year["Month"].dropna().unique())
     month = st.selectbox("Kies een maand:", months)
 
@@ -163,66 +127,71 @@ if resolution == "Dagbasis (uren)":
     df_day = df_month[df_month["Day"] == day].copy()
     df_day = df_day.sort_values("TIJD")
 
-    color = PASTEL_COLORS.get(element_name, "#a2d5f2")
+    # WINDROOS
+    if element_name == "Windrichting":
+        st.subheader(f"Windroos – {year}-{month}-{day}")
+        fig = make_wind_rose(df_day)
+        st.plotly_chart(fig, use_container_width=True)
 
-    fig = go.Figure()
+    else:
+        # PASTEL LIJNGRAFIEK
+        color = PASTEL_COLORS.get(element_name, "#a2d5f2")
 
-    # Glow layer
-    fig.add_trace(go.Scatter(
-        x=df_day["TIJD"],
-        y=df_day[element_name],
-        mode="lines",
-        line=dict(color=color, width=10),
-        opacity=0.15,
-        showlegend=False
-    ))
+        fig = go.Figure()
 
-    # Main pastel line
-    fig.add_trace(go.Scatter(
-        x=df_day["TIJD"],
-        y=df_day[element_name],
-        mode="lines+markers",
-        line=dict(color=color, width=3),
-        marker=dict(size=6, color=color),
-        name=element_name
-    ))
+        # Glow laag
+        fig.add_trace(go.Scatter(
+            x=df_day["TIJD"],
+            y=df_day[element_name],
+            mode="lines",
+            line=dict(color=color, width=10),
+            opacity=0.15,
+            showlegend=False
+        ))
 
-    fig.update_layout(
-        xaxis_title="Uur (0–23)",
-        yaxis_title=element_name,
-        height=500,
-        plot_bgcolor="#fdfbff",
-        paper_bgcolor="#fdfbff"
-    )
+        # Hoofdlaag
+        fig.add_trace(go.Scatter(
+            x=df_day["TIJD"],
+            y=df_day[element_name],
+            mode="lines+markers",
+            line=dict(color=color, width=3),
+            marker=dict(size=6, color=color),
+            name=element_name
+        ))
 
-    st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(
+            xaxis_title="Uur (0–23)",
+            yaxis_title=element_name,
+            height=500,
+            plot_bgcolor="#fdfbff",
+            paper_bgcolor="#fdfbff"
+        )
 
-    export_panel(
-        fig,
-        df_day[["DAG", "TIJD", element_name]],
-        filename_prefix=f"{element_name}_{year}_{month}_{day}_dagbasis"
-    )
+        st.subheader(f"{element_name} – Dagbasis (uren)")
+        st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
-# MAANDBASIS (dagen 1–31)
+# MAANDBASIS
 # -----------------------------
 elif resolution == "Maandbasis (dagen)":
-    st.subheader(f"{element_name} – Maandbasis (dagen) – {year}")
-
     months = sorted(df_year["Month"].dropna().unique())
     month = st.selectbox("Kies een maand:", months)
 
     df_month = df_year[df_year["Month"] == month].copy()
 
-    stat_choice = st.radio(
-        "Kies statistiek:",
-        ["Gemiddelde", "Maximum", "Minimum"],
-        horizontal=True
-    )
-
+    # WINDROOS
     if element_name == "Windrichting":
-        daily = df_month.groupby("Day")[element_name].apply(vector_mean).reset_index()
+        st.subheader(f"Windroos – {year}-{month}")
+        fig = make_wind_rose(df_month)
+        st.plotly_chart(fig, use_container_width=True)
+
     else:
+        stat_choice = st.radio(
+            "Kies statistiek:",
+            ["Gemiddelde", "Maximum", "Minimum"],
+            horizontal=True
+        )
+
         if stat_choice == "Gemiddelde":
             daily = df_month.groupby("Day")[element_name].mean().reset_index()
         elif stat_choice == "Maximum":
@@ -230,53 +199,45 @@ elif resolution == "Maandbasis (dagen)":
         elif stat_choice == "Minimum":
             daily = df_month.groupby("Day")[element_name].min().reset_index()
 
-    daily = daily.sort_values("Day")
+        daily = daily.sort_values("Day")
 
-    color = PASTEL_COLORS.get(element_name, "#a2d5f2")
+        color = PASTEL_COLORS.get(element_name, "#a2d5f2")
 
-    fig = go.Figure()
+        fig = go.Figure()
 
-    # Glow layer
-    fig.add_trace(go.Scatter(
-        x=daily["Day"],
-        y=daily[element_name],
-        mode="lines",
-        line=dict(color=color, width=10),
-        opacity=0.15,
-        showlegend=False
-    ))
+        # Glow laag
+        fig.add_trace(go.Scatter(
+            x=daily["Day"],
+            y=daily[element_name],
+            mode="lines",
+            line=dict(color=color, width=10),
+            opacity=0.15,
+            showlegend=False
+        ))
 
-    # Main pastel line
-    fig.add_trace(go.Scatter(
-        x=daily["Day"],
-        y=daily[element_name],
-        mode="lines+markers",
-        line=dict(color=color, width=3),
-        marker=dict(size=6, color=color),
-        name=f"{stat_choice} {element_name}"
-    ))
+        # Hoofdlaag
+        fig.add_trace(go.Scatter(
+            x=daily["Day"],
+            y=daily[element_name],
+            mode="lines+markers",
+            line=dict(color=color, width=3),
+            marker=dict(size=6, color=color),
+            name=f"{stat_choice} {element_name}"
+        ))
 
-    fig.update_layout(
-        xaxis_title="Dag van de maand",
-        yaxis_title=f"{stat_choice} {element_name}",
-        height=500,
-        plot_bgcolor="#fdfbff",
-        paper_bgcolor="#fdfbff"
-    )
+        fig.update_layout(
+            xaxis_title="Dag van de maand",
+            yaxis_title=f"{stat_choice} {element_name}",
+            height=500,
+            plot_bgcolor="#fdfbff",
+            paper_bgcolor="#fdfbff"
+        )
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.subheader(f"{element_name} – Maandbasis ({stat_choice})")
+        st.plotly_chart(fig, use_container_width=True)
 
-    export_panel(
-        fig,
-        daily[["Day", element_name]],
-        filename_prefix=f"{element_name}_{year}_{month}_{stat_choice}_maandbasis"
-    )
-    # -----------------------------
-# EINDE VAN DE APP
 # -----------------------------
-
+# FOOTER
+# -----------------------------
 st.markdown("---")
-st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard (Pastel Glow UI)")
-st.write("© Meteorologische Dienst Suriname – Unit Klimatologie")
-
-
+st.write("Gemaakt voor Zorg & Hoop – All Element Data Dashboard")
